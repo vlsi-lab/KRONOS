@@ -10,7 +10,7 @@ module testharness #(
     parameter COREV_PULP                  = 0,
     parameter FPU                         = 0,
     parameter ZFINX                       = 0,
-    parameter X_EXT                       = 0,         // eXtension interface in cv32e40x
+    parameter X_EXT                       = 1,         // eXtension interface in cv32e40x
     parameter JTAG_DPI                    = 0,
     parameter USE_EXTERNAL_DEVICE_EXAMPLE = 1,
     parameter CLK_FREQUENCY               = 'd100_000  //KHz
@@ -34,12 +34,12 @@ module testharness #(
 
   import obi_pkg::*;
   import reg_pkg::*;
-  import keccak_x_heep_pkg::*;
+  import kronos_x_heep_pkg::*;
   import addr_map_rule_pkg::*;
 
   localparam SWITCH_ACK_LATENCY = 15;
-  localparam EXT_XBAR_NMASTER_RND = USE_EXTERNAL_DEVICE_EXAMPLE ? keccak_x_heep_pkg::EXT_XBAR_NMASTER : 1;
-  localparam HEEP_EXT_XBAR_NMASTER = USE_EXTERNAL_DEVICE_EXAMPLE ? keccak_x_heep_pkg::EXT_XBAR_NMASTER : 0;
+  localparam EXT_XBAR_NMASTER_RND = USE_EXTERNAL_DEVICE_EXAMPLE ? kronos_x_heep_pkg::EXT_XBAR_NMASTER : 1;
+  localparam HEEP_EXT_XBAR_NMASTER = USE_EXTERNAL_DEVICE_EXAMPLE ? kronos_x_heep_pkg::EXT_XBAR_NMASTER : 0;
 
   localparam int unsigned LOG_EXT_XBAR_NSLAVE = EXT_XBAR_NSLAVE > 32'd1 ? $clog2(
       EXT_XBAR_NSLAVE
@@ -78,11 +78,11 @@ module testharness #(
   `endif
  
 
-  keccak_x_heep_top #(
+  kronos_x_heep_top #(
       .COREV_PULP(COREV_PULP),
       .FPU(FPU),
       .ZFINX(ZFINX)
-  ) keccak_x_heep_top_i (
+  ) kronos_x_heep_top_i (
       .clk_i,
       .rst_ni,
 
@@ -124,9 +124,9 @@ module testharness #(
   logic [core_v_mini_mcu_pkg::EXTERNAL_DOMAINS-1:0] delayed_tb_external_subsystem_powergate_switch_ack;
 
   always_ff @(negedge clk_i) begin
-    tb_cpu_subsystem_powergate_switch_ack[0] <= keccak_x_heep_top_i.x_heep_system_i.cpu_subsystem_powergate_switch;
-    tb_peripheral_subsystem_powergate_switch_ack[0] <= keccak_x_heep_top_i.x_heep_system_i.peripheral_subsystem_powergate_switch;
-    tb_memory_subsystem_banks_powergate_switch_ack[0] <= keccak_x_heep_top_i.x_heep_system_i.memory_subsystem_banks_powergate_switch;
+    tb_cpu_subsystem_powergate_switch_ack[0] <= kronos_x_heep_top_i.x_heep_system_i.cpu_subsystem_powergate_switch_n;
+    tb_peripheral_subsystem_powergate_switch_ack[0] <= kronos_x_heep_top_i.x_heep_system_i.peripheral_subsystem_powergate_switch_n;
+    //tb_memory_subsystem_banks_powergate_switch_ack[0] <= kronos_x_heep_top_i.x_heep_system_i.memory_subsystem_banks_powergate_switch_n;
     tb_external_subsystem_powergate_switch_ack[0] <= external_subsystem_powergate_switch;
     for (int i = 0; i < SWITCH_ACK_LATENCY; i++) begin
       tb_memory_subsystem_banks_powergate_switch_ack[i+1] <= tb_memory_subsystem_banks_powergate_switch_ack[i];
@@ -143,14 +143,14 @@ module testharness #(
 
   always_comb begin
 `ifndef VERILATOR
-    force keccak_x_heep_top_i.x_heep_system_i.core_v_mini_mcu_i.cpu_subsystem_powergate_switch_ack_i = delayed_tb_cpu_subsystem_powergate_switch_ack;
-    force keccak_x_heep_top_i.x_heep_system_i.core_v_mini_mcu_i.peripheral_subsystem_powergate_switch_ack_i = delayed_tb_peripheral_subsystem_powergate_switch_ack;
-    force keccak_x_heep_top_i.x_heep_system_i.core_v_mini_mcu_i.memory_subsystem_banks_powergate_switch_ack_i = delayed_tb_memory_subsystem_banks_powergate_switch_ack;
+    force kronos_x_heep_top_i.x_heep_system_i.core_v_mini_mcu_i.cpu_subsystem_powergate_switch_ack_ni = delayed_tb_cpu_subsystem_powergate_switch_ack;
+    force kronos_x_heep_top_i.x_heep_system_i.core_v_mini_mcu_i.peripheral_subsystem_powergate_switch_ack_ni = delayed_tb_peripheral_subsystem_powergate_switch_ack;
+    //force kronos_x_heep_top_i.x_heep_system_i.core_v_mini_mcu_i.memory_subsystem_banks_powergate_switch_ack_ni = delayed_tb_memory_subsystem_banks_powergate_switch_ack;
     force external_subsystem_powergate_switch_ack = delayed_tb_external_subsystem_powergate_switch_ack;
 `else
-    keccak_x_heep_top_i.x_heep_system_i.cpu_subsystem_powergate_switch_ack = delayed_tb_cpu_subsystem_powergate_switch_ack;
-    keccak_x_heep_top_i.x_heep_system_i.peripheral_subsystem_powergate_switch_ack = delayed_tb_peripheral_subsystem_powergate_switch_ack;
-    keccak_x_heep_top_i.x_heep_system_i.memory_subsystem_banks_powergate_switch_ack = delayed_tb_memory_subsystem_banks_powergate_switch_ack;
+    kronos_x_heep_top_i.x_heep_system_i.cpu_subsystem_powergate_switch_ack_ni = delayed_tb_cpu_subsystem_powergate_switch_ack;
+    kronos_x_heep_top_i.x_heep_system_i.peripheral_subsystem_powergate_switch_ack_ni = delayed_tb_peripheral_subsystem_powergate_switch_ack;
+    kronos_x_heep_top_i.x_heep_system_i.memory_subsystem_banks_powergate_switch_ack_ni = delayed_tb_memory_subsystem_banks_powergate_switch_ack;
     external_subsystem_powergate_switch_ack = delayed_tb_external_subsystem_powergate_switch_ack;
 `endif
   end

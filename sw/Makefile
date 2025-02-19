@@ -23,8 +23,9 @@ RISCV_EXE_PREFIX           = $(RISCV)/bin/riscv32-unknown-elf-
 
 TARGET                     ?= sim
 
+LINKER   				   ?= on_chip
 # GCC configuration
-CUSTOM_GCC_FLAGS           =
+CUSTOM_GCC_FLAGS           = -DPERF_CNT_CYCLES=1
 
 INC_FOLDERS_GCC             = $(addprefix -I ,$(INC_FOLDERS))
 LIB_CRT                    = $(wildcard device/lib/crt/crt0.S)
@@ -46,28 +47,41 @@ LIB_DRIVERS                += $(wildcard device/lib/drivers/fast_intr_ctrl/*.c)
 LIB_DRIVERS                += $(wildcard device/lib/drivers/spi_mem/*.c)
 LIB_DRIVERS                += $(wildcard device/lib/drivers/spi_host/*.c)
 LIB_DRIVERS                += $(wildcard device/lib/drivers/pad_control/*.c)
-LIB_DRIVERS                += $(wildcard external/lib/drivers/keccak/*.c)
+LIB_DRIVERS                += $(wildcard device/lib/sdk/timer/*.c)
 INC_FOLDERS                = $(sort $(dir $(wildcard device/target/$(TARGET)/)))
 INC_FOLDERS                += $(sort $(dir $(wildcard device/lib/drivers/*/)))
 INC_FOLDERS                += $(sort $(dir $(wildcard device/lib/base/)))
 INC_FOLDERS                += $(sort $(dir $(wildcard device/lib/runtime/)))
 INC_FOLDERS                += $(sort $(dir $(wildcard device/lib/crt/)))
+INC_FOLDERS                += $(sort $(dir $(wildcard device/lib/sdk/timer/)))
 INC_FOLDERS                += $(sort $(dir $(wildcard external/lib/drivers/*/)))
 INC_FOLDERS                += $(sort $(dir $(wildcard external/lib/runtime/)))
-# source files of kyber application
-$(info "Compiling kyber with security leve $(SEC_LEVEL)")
-ifeq ($(SEC_LEVEL), 512)
-	LIB_DRIVERS                += $(wildcard applications/kyber512/drivers/*.c)
-	INC_FOLDERS                += $(sort $(dir $(wildcard applicatons/kyber512/include/*)))
-else ifeq ($(SEC_LEVEL), 768)
-	LIB_DRIVERS                += $(wildcard applications/kyber768/drivers/*.c)
-	INC_FOLDERS                += $(sort $(dir $(wildcard applicatons/kyber768/include/*)))
+
+
+INC_FOLDERS                += $(sort $(dir $(wildcard applications/tests/*)))
+LIB_DRIVERS                += $(wildcard applications/tests/*)
+#LIB_DRIVERS                += $(wildcard applications/keccak_test_xif/shake_ds.c)
+
+
+#---------------------------------------------------------------------------------------------------------------------------------------------------------------
+$(info "Compiling $(ACC)-version, $(SCHEME)-$(ALG)-$(VERSION) or -$(TESTS)-app")
+
+INC_FOLDERS                += $(sort $(dir $(wildcard applications/$(ACC)/common/include/*.h)))
+LIB_DRIVERS                += $(wildcard applications/$(ACC)/common/src/*.c)
+INC_FOLDERS                 += $(sort $(dir $(wildcard applications/$(ACC)/$(SCHEME)/$(ALG)/include/*.h)))
+LIB_DRIVERS 				+= $(wildcard applications/$(ACC)/$(SCHEME)/$(ALG)/src/*.c)
+
+
+#---------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+ifeq ($(LINKER), flash_exec)
+	LINKER_FILE = link_flash_exec.ld
+	LIB_CRT_TO_USE  = $(LIB_CRT)
+	LIB_CRT_TO_USE	+= $(LIB_CRT_FLASH_EXEC)
 else
-	LIB_DRIVERS                += $(wildcard applications/kyber1024/drivers/*.c)
-	INC_FOLDERS                += $(sort $(dir $(wildcard applicatons/kyber1024/include/*)))
+	LINKER_FILE = link.ld
+	LIB_CRT_TO_USE  = $(LIB_CRT)
 endif
-
-
 
 # Rules to generate hex (loadable by simulators) from elf
 %.hex: %.elf
@@ -89,205 +103,36 @@ x_heep_applications/hello_world/hello_world.elf: x_heep_applications/hello_world
 	$(RISCV_EXE_PREFIX)gcc -march=rv32imc -o $@ -w -Os -g -nostdlib -D USE_DMA=$(USE_DMA)\
 		$(CUSTOM_GCC_FLAGS) \
 		-DHOST_BUILD \
-		-T linker/link.ld \
+		-T linker/$(LINKER_FILE) \
 		-I $(RISCV)/riscv32-unknown-elf/include \
 		$(INC_FOLDERS_GCC) \
 		-static \
-		$(LIB_CRT) \
+		$(LIB_CRT_TO_USE) \
 		$^ $(LIB_RUNTIME) \
 		$(LIB_BASE) \
 		$(LIB_DRIVERS) \
 		-L $(RISCV)/riscv32-unknown-elf/lib \
-		-lc -lm -lgcc -flto -ffunction-sections -fdata-sections -specs=nano.specs
+		-lc -lm -lgcc -flto -ffunction-sections -fdata-sections -fstack-usage -specs=nano.specs
 
-x_heep_applications/hello_world/hello_world.flash_exec.elf: x_heep_applications/hello_world/hello_world.c
-	$(RISCV_EXE_PREFIX)gcc -march=rv32imc -o $@ -w -Os -g -nostdlib \
+applications/$(ACC)/$(ALG)/$(SCHEME)/main.elf: applications/$(ACC)/$(ALG)/$(SCHEME)/main.c
+	$(RISCV_EXE_PREFIX)gcc -march=rv32imc -o $@ -w -O2 -g -nostdlib \
 		$(CUSTOM_GCC_FLAGS) \
 		-DHOST_BUILD \
-		-T linker/link_flash_exec.ld \
+		-DPQCLEAN_NAMESPACE=PQCLEAN_$(SCHEME_UPPERCASE)_CLEAN \
+		-T linker/$(LINKER_FILE) \
 		-I $(RISCV)/riscv32-unknown-elf/include \
 		$(INC_FOLDERS_GCC) \
 		-static \
-		$(LIB_CRT_FLASH_EXEC) \
-		$^ $(LIB_RUNTIME) \
-		$(LIB_BASE) \
-		$(LIB_DRIVERS) \
-		-Wl,-Map=x_heep_applications/hello_world/hello_world.map \
-		-L $(RISCV)/riscv32-unknown-elf/lib \
-		-lc -lm -lgcc -flto -ffunction-sections -fdata-sections -specs=nano.specs
-
-applications/keccak_test/main.elf: applications/keccak_test/main.c 
-	$(RISCV_EXE_PREFIX)gcc -march=rv32imc -o $@ -w -Os -g -nostdlib \
-		$(CUSTOM_GCC_FLAGS) \
-		-DHOST_BUILD \
-		-T linker/link.ld \
-		-I $(RISCV)/riscv32-unknown-elf/include \
-		$(INC_FOLDERS_GCC) \
-		-static \
-		$(LIB_CRT) \
+		$(LIB_CRT_TO_USE) \
 		$^ $(LIB_RUNTIME) \
 		$(LIB_BASE) \
 		$(LIB_DRIVERS) \
 		-L $(RISCV)/riscv32-unknown-elf/lib \
-		-lc -lm -lgcc -flto -ffunction-sections -fdata-sections -specs=nano.specs
-
-#########################################################################################################
-############################ KYBER 512 ##################################################################
-#########################################################################################################
-
-applications/kyber512/keygen/keygen.elf: applications/kyber512/keygen/keygen.c 
-	$(RISCV_EXE_PREFIX)gcc -march=rv32imc -o $@ -w -Os -g -nostdlib \
-		$(CUSTOM_GCC_FLAGS) \
-		-DHOST_BUILD \
-		-T linker/link.ld \
-		-I $(RISCV)/riscv32-unknown-elf/include \
-		$(INC_FOLDERS_GCC) \
-		-static \
-		$(LIB_CRT) \
-		$^ $(LIB_RUNTIME) \
-		$(LIB_BASE) \
-		$(LIB_DRIVERS) \
-		-L $(RISCV)/riscv32-unknown-elf/lib \
-		-lc -lm -lgcc -flto -ffunction-sections -fdata-sections -specs=nano.specs
-
-applications/kyber512/enc/enc.elf: applications/kyber512/enc/enc.c 
-	$(RISCV_EXE_PREFIX)gcc -march=rv32imc -o $@ -w -Os -g -nostdlib \
-		$(CUSTOM_GCC_FLAGS) \
-		-DHOST_BUILD \
-		-T linker/link.ld \
-		-I $(RISCV)/riscv32-unknown-elf/include \
-		$(INC_FOLDERS_GCC) \
-		-static \
-		$(LIB_CRT) \
-		$^ $(LIB_RUNTIME) \
-		$(LIB_BASE) \
-		$(LIB_DRIVERS) \
-		-L $(RISCV)/riscv32-unknown-elf/lib \
-		-lc -lm -lgcc -flto -ffunction-sections -fdata-sections -specs=nano.specs
-
-applications/kyber512/dec/dec.elf: applications/kyber512/dec/dec.c 
-	$(RISCV_EXE_PREFIX)gcc -march=rv32imc -o $@ -w -Os -g -nostdlib \
-		$(CUSTOM_GCC_FLAGS) \
-		-DHOST_BUILD \
-		-T linker/link.ld \
-		-I $(RISCV)/riscv32-unknown-elf/include \
-		$(INC_FOLDERS_GCC) \
-		-static \
-		$(LIB_CRT) \
-		$^ $(LIB_RUNTIME) \
-		$(LIB_BASE) \
-		$(LIB_DRIVERS) \
-		-L $(RISCV)/riscv32-unknown-elf/lib \
-		-lc -lm -lgcc -flto -ffunction-sections -fdata-sections -specs=nano.specs
-
-#########################################################################################################
-############################ KYBER 768 ##################################################################
-#########################################################################################################
-
-applications/kyber768/keygen/keygen.elf: applications/kyber768/keygen/keygen.c 
-	$(RISCV_EXE_PREFIX)gcc -march=rv32imc -o $@ -w -Os -g -nostdlib \
-		$(CUSTOM_GCC_FLAGS) \
-		-DHOST_BUILD \
-		-T linker/link.ld \
-		-I $(RISCV)/riscv32-unknown-elf/include \
-		$(INC_FOLDERS_GCC) \
-		-static \
-		$(LIB_CRT) \
-		$^ $(LIB_RUNTIME) \
-		$(LIB_BASE) \
-		$(LIB_DRIVERS) \
-		-L $(RISCV)/riscv32-unknown-elf/lib \
-		-lc -lm -lgcc -flto -ffunction-sections -fdata-sections -specs=nano.specs
-
-applications/kyber768/enc/enc.elf: applications/kyber768/enc/enc.c 
-	$(RISCV_EXE_PREFIX)gcc -march=rv32imc -o $@ -w -Os -g -nostdlib \
-		$(CUSTOM_GCC_FLAGS) \
-		-DHOST_BUILD \
-		-T linker/link.ld \
-		-I $(RISCV)/riscv32-unknown-elf/include \
-		$(INC_FOLDERS_GCC) \
-		-static \
-		$(LIB_CRT) \
-		$^ $(LIB_RUNTIME) \
-		$(LIB_BASE) \
-		$(LIB_DRIVERS) \
-		-L $(RISCV)/riscv32-unknown-elf/lib \
-		-lc -lm -lgcc -flto -ffunction-sections -fdata-sections -specs=nano.specs
-
-applications/kyber768/dec/dec.elf: applications/kyber768/dec/dec.c 
-	$(RISCV_EXE_PREFIX)gcc -march=rv32imc -o $@ -w -Os -g -nostdlib \
-		$(CUSTOM_GCC_FLAGS) \
-		-DHOST_BUILD \
-		-T linker/link.ld \
-		-I $(RISCV)/riscv32-unknown-elf/include \
-		$(INC_FOLDERS_GCC) \
-		-static \
-		$(LIB_CRT) \
-		$^ $(LIB_RUNTIME) \
-		$(LIB_BASE) \
-		$(LIB_DRIVERS) \
-		-L $(RISCV)/riscv32-unknown-elf/lib \
-		-lc -lm -lgcc -flto -ffunction-sections -fdata-sections -specs=nano.specs
-
-#########################################################################################################
-############################ KYBER 1024 ##################################################################
-#########################################################################################################
-
-applications/kyber1024/keygen/keygen.elf: applications/kyber1024/keygen/keygen.c 
-	$(RISCV_EXE_PREFIX)gcc -march=rv32imc -o $@ -w -Os -g -nostdlib \
-		$(CUSTOM_GCC_FLAGS) \
-		-DHOST_BUILD \
-		-T linker/link.ld \
-		-I $(RISCV)/riscv32-unknown-elf/include \
-		$(INC_FOLDERS_GCC) \
-		-static \
-		$(LIB_CRT) \
-		$^ $(LIB_RUNTIME) \
-		$(LIB_BASE) \
-		$(LIB_DRIVERS) \
-		-L $(RISCV)/riscv32-unknown-elf/lib \
-		-lc -lm -lgcc -flto -ffunction-sections -fdata-sections -specs=nano.specs
-
-applications/kyber1024/enc/enc.elf: applications/kyber1024/enc/enc.c 
-	$(RISCV_EXE_PREFIX)gcc -march=rv32imc -o $@ -w -Os -g -nostdlib \
-		$(CUSTOM_GCC_FLAGS) \
-		-DHOST_BUILD \
-		-T linker/link.ld \
-		-I $(RISCV)/riscv32-unknown-elf/include \
-		$(INC_FOLDERS_GCC) \
-		-static \
-		$(LIB_CRT) \
-		$^ $(LIB_RUNTIME) \
-		$(LIB_BASE) \
-		$(LIB_DRIVERS) \
-		-L $(RISCV)/riscv32-unknown-elf/lib \
-		-lc -lm -lgcc -flto -ffunction-sections -fdata-sections -specs=nano.specs
-
-applications/kyber1024/dec/dec.elf: applications/kyber1024/dec/dec.c 
-	$(RISCV_EXE_PREFIX)gcc -march=rv32imc -o $@ -w -Os -g -nostdlib \
-		$(CUSTOM_GCC_FLAGS) \
-		-DHOST_BUILD \
-		-T linker/link.ld \
-		-I $(RISCV)/riscv32-unknown-elf/include \
-		$(INC_FOLDERS_GCC) \
-		-static \
-		$(LIB_CRT) \
-		$^ $(LIB_RUNTIME) \
-		$(LIB_BASE) \
-		$(LIB_DRIVERS) \
-		-L $(RISCV)/riscv32-unknown-elf/lib \
-		-lc -lm -lgcc -flto -ffunction-sections -fdata-sections -specs=nano.specs
-
+		-lc -lm -lgcc -flto -ffunction-sections -fdata-sections -fstack-usage -specs=nano.specs
 
 
 clean:
-	rm -rf applications/*/*.elf \
-	rm -rf applications/*/*.hex \
-	rm -rf applications/*/*.dis \
-	rm -rf applications/*/*.map \
-	rm -rf applications/*/*.dump \
-	rm -rf x_heep_applications/*/*.elf \
-	rm -rf x_heep_applications/*/*.hex \
-	rm -rf x_heep_applications/*/*.dis \
-	rm -rf x_heep_applications/*/*.map \
-	rm -rf x_heep_applications/*/*.dump
+	rm -rf applications/*/*.{elf,hex,dis,map,dump} \
+	rm -rf x_heep_applications/*/*.{elf,hex,dis,map,dump} \
+	rm -rf applications/*/*/*/*.{elf,hex,dis,map,dump} \
+	rm -rf applications/*/*/*/*/*.{elf,hex,dis,map,dump}

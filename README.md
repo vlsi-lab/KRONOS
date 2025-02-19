@@ -23,8 +23,10 @@ make questasim-sim
 
 Then, depending on the applications you want to run, you need to do:
 ```
-make app-keccak
-
-make run-keccak
+make app-optimized-KECCAK-SHA3-384 SCHEME=SHA3-384 ALG=KECCAK ACC=optimized
+make run-optimized-KECCAK-SHA3-384 SCHEME=SHA3-384 ALG=KECCAK ACC=optimized
 ```
-
+```
+make app-original-KECCAK-SHA3-384 SCHEME=SHA3-384 ALG=KECCAK ACC=original
+make run-original-KECCAK-SHA3-384 SCHEME=SHA3-384 ALG=KECCAK ACC=original
+```

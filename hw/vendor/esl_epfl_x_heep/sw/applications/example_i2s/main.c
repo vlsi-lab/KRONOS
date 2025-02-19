@@ -10,10 +10,10 @@
 /**
  * This is a example for a i2s microphone.
  * It is recording an audiosample of a given size and then outputing it over UART.
- * 
+ *
  * Tested with SPH0645 microphone module from Adafruit
  * https://www.adafruit.com/product/3421
- * 
+ *
  * check `pin_assign.xdc` for the pinout of the FPGA to connect:
  * 3V -> 3.3V
  * GND -> GND
@@ -21,19 +21,20 @@
  * LRCL -> I2S_WS
  * DOUT -> I2S_SD
  * SEL -> left floating (pulldown) to transmit data on the left channel
- * 
+ *
  */
 
 #include <stdio.h>
 #include <stdlib.h>
 
 #include "core_v_mini_mcu.h"
+
 #include "x-heep.h"
 #include "i2s.h"
 #include "i2s_structs.h"
 
 
-#ifdef TARGET_PYNQ_Z2
+#ifdef TARGET_IS_FPGA
 #define I2S_TEST_BATCH_SIZE    128
 #define I2S_TEST_BATCHES      16
 #define I2S_CLK_DIV           8
@@ -65,21 +66,17 @@
 
 
 
-/* Change this value to 0 to disable prints for FPGA and enable them for simulation. */
-#define DEFAULT_PRINTF_BEHAVIOR 1
-
 /* By default, printfs are activated for FPGA and disabled for simulation. */
-#ifdef TARGET_PYNQ_Z2 
-    #define ENABLE_PRINTF DEFAULT_PRINTF_BEHAVIOR
-#else 
-    #define ENABLE_PRINTF !DEFAULT_PRINTF_BEHAVIOR
-#endif
+#define PRINTF_IN_FPGA  1
+#define PRINTF_IN_SIM   0
 
-#if ENABLE_PRINTF
-  #define PRINTF(fmt, ...)    printf(fmt, ## __VA_ARGS__)
+#if TARGET_SIM && PRINTF_IN_SIM
+        #define PRINTF(fmt, ...)    printf(fmt, ## __VA_ARGS__)
+#elif PRINTF_IN_FPGA && !TARGET_SIM
+    #define PRINTF(fmt, ...)    printf(fmt, ## __VA_ARGS__)
 #else
-  #define PRINTF(...)
-#endif 
+    #define PRINTF(...)
+#endif
 
 // Interrupt controller variables
 plic_result_t plic_res;
@@ -107,7 +104,7 @@ void handler_irq_i2s(uint32_t id) {
 }
 
 #ifdef USE_DMA
-void dma_intr_handler_trans_done(void)
+void dma_intr_handler_trans_done(uint8_t channel)
 {
     dma_intr_flag = 1;
 }
@@ -121,7 +118,7 @@ static dma_trans_t trans;
 //
 // Setup
 //
-void setup() 
+void setup()
 {
 
     #ifdef USE_DMA
@@ -135,12 +132,12 @@ void setup()
     tgt_src.trig       = DMA_TRIG_SLOT_I2S;
     tgt_src.type       = DMA_DATA_TYPE_WORD;
     tgt_src.size_du    = AUDIO_DATA_NUM;
-    
+
     tgt_dst.ptr        = audio_data_0;
     tgt_dst.inc_du     = 1;
     tgt_dst.trig       = DMA_TRIG_MEMORY;
     tgt_dst.type       = DMA_DATA_TYPE_WORD;
-    
+
     trans.src        = &tgt_src;
     trans.dst        = &tgt_dst;
     trans.end        = DMA_TRANS_END_INTR;
@@ -164,19 +161,19 @@ void setup()
     i2s_res = i2s_init(I2S_CLK_DIV, I2S_32_BITS);
     if (i2s_res != kI2sOk) {
         PRINTF("I2S init failed with %d\n\r", i2s_res);
-    } 
+    }
     i2s_rx_enable_watermark(AUDIO_DATA_NUM, I2S_USE_INTERRUPT);
 
 }
 
-#define I2S_WAIT_TIME_US 100000 
+#define I2S_WAIT_TIME_US 100000
 #define I2S_WAIT_CYCLES  ((1.5 * REFERENCE_CLOCK_Hz / 4))
 // 1500000
 
 int main(int argc, char *argv[]) {
     bool success = true;
 
-#ifdef TARGET_PYNQ_Z2
+#ifdef TARGET_IS_FPGA
     for (uint32_t i = 0; i < 0x10000; i++) asm volatile("nop");
 #endif
     PRINTF("I2S DEMO\r\n\r");
@@ -185,8 +182,8 @@ int main(int argc, char *argv[]) {
 
     //PRINTF("Setup done!\r\n\r");
 
-#ifdef TARGET_PYNQ_Z2
-    
+#ifdef TARGET_IS_FPGA
+
 
     for (uint32_t i = 0; i < I2S_WAIT_CYCLES; i++) asm volatile("nop");
 
@@ -197,15 +194,15 @@ int main(int argc, char *argv[]) {
 
     int batch = 0;
     for (int batch = 0; batch < I2S_TEST_BATCHES; batch++){
-        PRINTF("starting\r\n\r"); // <- csv header for python 
+        PRINTF("starting\r\n\r"); // <- csv header for python
         #ifdef USE_DMA
             dma_launch( &trans );
         #endif // USE_DMA
-        
+
         i2s_res = i2s_rx_start(I2S_LEFT_CH);
         if (i2s_res != kI2sOk) {
             PRINTF("I2S rx start failed with %d\n\r", i2s_res);
-        } 
+        }
 
         #ifdef USE_DMA
         // WAITING FOR DMA COPY TO FINISH
@@ -237,7 +234,7 @@ int main(int argc, char *argv[]) {
         }
 
 
-        // this takes wayyy longer than reading the samples, so no continuous mode is possible with UART dump 
+        // this takes wayyy longer than reading the samples, so no continuous mode is possible with UART dump
         int32_t* data = audio_data_0;
         for (int i = 0; i < AUDIO_DATA_NUM; i+=1) {
             PRINTF("%d\r\n\r",(int16_t) (data[i] >> 16));
@@ -265,7 +262,7 @@ int main(int argc, char *argv[]) {
         i2s_res = i2s_rx_start(I2S_BOTH_CH);
         if (i2s_res != kI2sOk) {
             PRINTF("I2S rx start failed with %d\n\r", i2s_res);
-        } 
+        }
         #ifdef USE_DMA
 
         // WAITING FOR DMA COPY TO FINISH
@@ -302,24 +299,49 @@ int main(int argc, char *argv[]) {
 
 
         PRINTF("B%x\r\n\r", batch);
-        
+
         int32_t* data = audio_data_0;
-        for (int i = 0; i < AUDIO_DATA_NUM; i+=2) {
-            PRINTF("0x%x 0x%x\r\n\r", data[i], data[i+1]);
+        int32_t data_even = 0;
+        int32_t data_odd  = 0;
+        for (int i = 0; i < AUDIO_DATA_NUM; i++) {
+            PRINTF("0x%x\r\n\r", data[i]);
             if (data[i] != 0) {
                 mic_connected = true; // the microphone testbench is connected
-                if (data[i] != 0x8765431) {
-                    PRINTF("ERROR left sample %d (B%d) = 0x%08x != 0x8765431\r\n\r", i, batch, data[i]);
-                    success = false;
+            } else {
+                if(i == 0) {
+                    //check what is the first data to expect, left or right
+                    //the testbench alternatively sends these 2 data, catching which one is first for each BATCH
+                    if ( (data[0] == 0x8765431) || (data[0] == 0xfedcba9) ) {
+                        if (data[0] == 0x8765431) {
+                            data_even = 0x8765431;
+                            data_odd  = 0xfedcba9;
+                        } else {
+                            data_odd  = 0x8765431;
+                            data_even = 0xfedcba9;
+                        }
+                    } else {
+                        PRINTF("ERROR sample %d (B%d) = 0x%08x != 0x8765431 or 0xfedcba9\r\n\r", i, batch, data[0]);
+                        success = false;
+                    }
+
+                } else {
+                    //check whether even or odd
+                    if (i & 0x1) {
+                        //odd
+                        if (data[i] != data_odd) {
+                                PRINTF("ERROR left sample %d (B%d) = 0x%08x != 0x%08x\r\n\r", i, batch, data[i], data_odd);
+                                success = false;
+                        }
+                    }
+                    else {
+                        //even
+                        if (data[i] != data_even) {
+                                PRINTF("ERROR left sample %d (B%d) = 0x%08x != 0x%08x\r\n\r", i, batch, data[i], data_even);
+                                success = false;
+                        }
+                    }
                 }
-            }
-            if (data[i+1] != 0) {
-                mic_connected = true; // the microphone testbench is connected
-                if (data[i+1] != 0xfedcba9) {
-                    PRINTF("ERROR left sample data[%d] = 0x%08x != 0xfedcba9\r\n\r", i+1, batch, data[i+1]);
-                    success = false;
-                }
-            }
+             }
         }
     }
 
@@ -329,7 +351,7 @@ int main(int argc, char *argv[]) {
 #endif
 
     i2s_terminate();
-    
+
     if( success ){
         PRINTF("Success. \n\r");
         return EXIT_SUCCESS;
