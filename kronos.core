@@ -8,6 +8,15 @@ name: vlsi:polito:mcu_kronos
 description: Integration framework of kronos in MCU
 
 filesets: 
+  
+  keccak_vhdl:
+    files:
+    - hw/rtl/keccak/keccak_globals.vhd
+    - hw/rtl/keccak/keccak_datapath.vhd
+    - hw/rtl/keccak/keccak_round_constants_gen.vhd 
+    - hw/rtl/keccak/keccak.vhd
+    - hw/rtl/keccak/keccak_round.vhd
+    file_type: vhdlSource
 
   kronos_x_heep:
     depend:
@@ -16,10 +25,10 @@ filesets:
     files:
     - hw/rtl/include/cv32e40px_core_v_xif_pkg.sv
     - hw/rtl/include/cv32e40px_pkg.sv
+    - hw/rtl/keccak/keccak_cu.sv
     - hw/rtl/include/kronos_pkg.sv
-    - hw/rtl/id_stage.sv
-    - hw/rtl/commit_stage.sv
-    - hw/rtl/rol32.v
+    - hw/rtl/register_keccak.sv
+    - hw/rtl/xif_controller.sv
     - hw/rtl/kronos.sv
     - hw/rtl/kronos_top.sv
     - hw/rtl/kronos_wrapper.sv
@@ -203,6 +212,7 @@ scripts:
 targets:
   default: &default_target
     filesets:
+    - keccak_vhdl
     - kronos_x_heep
     - x_heep_system
     toplevel: [kronos_x_heep_top]

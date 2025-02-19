@@ -25,7 +25,7 @@ device/lib/drivers/spi_host/spi_host.c:430:44:spi_intr_handler_event_host	32	sta
 device/lib/drivers/spi_host/spi_host.c:434:44:spi_intr_handler_error_host	32	static
 device/lib/drivers/spi_host/spi_host.c:438:44:spi_intr_handler_event_host2	32	static
 device/lib/drivers/spi_host/spi_host.c:442:44:spi_intr_handler_error_host2	32	static
-applications/optimized/common/src/fips202.c:84:14:KeccakF1600_StatePermute	288	static
+applications/optimized/common/src/fips202.c:51:14:KeccakF1600_StatePermute	0	static
 device/lib/drivers/spi_host/spi_host.c:452:20:spi_get_events.isra	16	static
 device/lib/runtime/handler.c:28:13:print_exc_msg	16	static
 applications/optimized/KECCAK/SHA3-384/main.c:13:5:main	672	static
