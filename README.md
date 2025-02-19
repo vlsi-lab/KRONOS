@@ -23,8 +23,8 @@ make questasim-sim
 
 Then, depending on the applications you want to run, you need to do:
 ```
-make app-$(ACC)-LWC-ASCON-$(VERSION) SCHEME=LWC ALG=ASCON VERSION=$(VERSION)$ ACC=$(ACC)
+make app-keccak
 
-make run-$(ACC)-LWC-ASCON-$(VERSION) SCHEME=LWC ALG=ASCON VERSION=$(VERSION)$ ACC=$(ACC)
+make run-keccak
 ```
 
