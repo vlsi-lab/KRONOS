@@ -39,6 +39,6 @@ int main(void) {
     for (int i = 0; i < 48; i++) {
         printf("%02X", t[i]);
     }
-
+    printf("\n");
     return result;
 }
