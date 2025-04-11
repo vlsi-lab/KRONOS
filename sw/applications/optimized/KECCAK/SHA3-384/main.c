@@ -9,6 +9,12 @@
     #include "csr.h"
 #endif
 
+static const uint8_t t_expected[32] = {
+    0xB1, 0x3F, 0xEB, 0xB1, 0xB3, 0xC5, 0x4A, 0x7C,
+    0x6B, 0x69, 0x36, 0x7F, 0x69, 0x3A, 0x1D, 0x1F,
+    0x31, 0x45, 0x70, 0x9B, 0x6D, 0x00, 0x00, 0x00,
+    0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00
+};
 
 int main(void) {
     int result = 0;
@@ -20,7 +26,6 @@ int main(void) {
 
     for (int i = 0; i < 200; i++) {
         input[i] = i;
-        //printf("%02X", input[i]);
     }
 
     printf("Test started!\n");
@@ -33,6 +38,12 @@ int main(void) {
         CSR_READ(CSR_REG_MCYCLE, &cycles);
         printf("Number of clock cycles for test-1 : %d\n", cycles);
     #endif
+
+    for (int i = 0; i < 32; i++) {
+        if (t[i] != t_expected[i]) {
+            printf("Expected t[%d] = 0x%02X, but got 0x%02X.\n", i, t_expected[i], t[i]);
+        }
+    }
 
     printf("Test: terminated\n");
 
