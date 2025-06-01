@@ -59,7 +59,7 @@ module ao_peripheral_subsystem
     output logic peripheral_subsystem_powergate_iso_o,
     output logic peripheral_subsystem_rst_no,
     output logic [core_v_mini_mcu_pkg::NUM_BANKS-1:0] memory_subsystem_banks_powergate_switch_o,
-    input  logic [core_v_mini_mcu_pkg::NUM_BANKS-1:0] memory_subsystem_banks_powergate_switch_ack_i,
+    input logic [core_v_mini_mcu_pkg::NUM_BANKS-1:0] memory_subsystem_banks_powergate_switch_ack_i,
     output logic [core_v_mini_mcu_pkg::NUM_BANKS-1:0] memory_subsystem_banks_powergate_iso_o,
     output logic [core_v_mini_mcu_pkg::NUM_BANKS-1:0] memory_subsystem_banks_set_retentive_o,
     output logic [EXT_DOMAINS_RND-1:0] external_subsystem_powergate_switch_o,
