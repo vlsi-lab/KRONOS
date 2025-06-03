@@ -20,7 +20,7 @@ make mcu-gen
 make x_heep-sync
 make questasim-sim
 ```
-
+P.S.: the ```make x_heep-sync``` must only be done for the £tightly" and "coprocessor" branches.
 Then, depending on the applications you want to run, you need to do:
 ```
 make app-keccak
