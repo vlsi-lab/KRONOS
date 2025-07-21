@@ -17,6 +17,12 @@ build/
 *.csv
 *.str
 
+
+*.elf
+*.su
+*.main.elf.ltrans0.ltrans.su
+*.hex
+
 # Python outputs
 **/__pycache__
 

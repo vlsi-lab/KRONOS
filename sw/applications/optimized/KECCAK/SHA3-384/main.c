@@ -7,6 +7,7 @@
 #ifdef PERF_CNT_CYCLES
     #include "core_v_mini_mcu.h"
     #include "csr.h"
+    #define CLOCK_KECCAK 0
 #endif
 
 
@@ -23,12 +24,12 @@ int main(void) {
     }
 
     printf("Test started!\n");
-    #ifdef PERF_CNT_CYCLES
+    #if defined(PERF_CNT_CYCLES) && (CLOCK_KECCAK == 0)
         CSR_CLEAR_BITS(CSR_REG_MCOUNTINHIBIT, 0x1);
         CSR_WRITE(CSR_REG_MCYCLE, 0);
     #endif
     sha3_384(t, input, 200);
-    #ifdef PERF_CNT_CYCLES
+    #if defined(PERF_CNT_CYCLES) && (CLOCK_KECCAK == 0)
         CSR_READ(CSR_REG_MCYCLE, &cycles);
         printf("Number of clock cycles for test-1 : %d\n", cycles);
     #endif

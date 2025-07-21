@@ -12,6 +12,13 @@
 
 #include "fips202.h"
 
+#ifdef PERF_CNT_CYCLES
+    #include "core_v_mini_mcu.h"
+    #include "csr.h"
+    #define CLOCK_KECCAK 0
+#endif
+
+
 #define NROUNDS 24
 #define ROL(a, offset) (((a) << (offset)) ^ ((a) >> (64 - (offset))))
 
@@ -85,6 +92,12 @@ static void KeccakF1600_StatePermute(uint64_t *state) {
     uint64_t Eka, Eke, Eki, Eko, Eku;
     uint64_t Ema, Eme, Emi, Emo, Emu;
     uint64_t Esa, Ese, Esi, Eso, Esu;
+
+    #if defined(PERF_CNT_CYCLES) && (CLOCK_KECCAK == 1)
+        unsigned int cycles;
+        CSR_CLEAR_BITS(CSR_REG_MCOUNTINHIBIT, 0x1);
+        CSR_WRITE(CSR_REG_MCYCLE, 0);
+    #endif
 
     // copyFromState(A, state)
     Aba = state[0];
@@ -331,6 +344,11 @@ static void KeccakF1600_StatePermute(uint64_t *state) {
     state[22] = Asi;
     state[23] = Aso;
     state[24] = Asu;
+
+    #if defined(PERF_CNT_CYCLES) && (CLOCK_KECCAK == 1)
+        CSR_READ(CSR_REG_MCYCLE, &cycles);
+        printf("Number of clock cycles of Keccakf1600: %d\n", cycles);
+    #endif
 }
 
 /*************************************************
