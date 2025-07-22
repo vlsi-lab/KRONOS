@@ -60,9 +60,12 @@ INC_FOLDERS                += $(sort $(dir $(wildcard external/lib/runtime/)))
 
 ifeq ($(TESTS), keccak)
 	INC_FOLDERS                 += $(sort $(dir $(wildcard applications//$(ACC)/keccak/*.h)))
-else
+else ifeq ($(TESTS), SHA3-384)
 	INC_FOLDERS                += $(sort $(dir $(wildcard applications/$(ACC)/SHA3-384/*.h)))
 	LIB_DRIVERS                += $(wildcard applications/$(ACC)/SHA3-384/fips202.c)
+else 
+	INC_FOLDERS                += $(sort $(dir $(wildcard applications/$(ACC)/$(TESTS)/include/*.h)))
+	LIB_DRIVERS                += $(wildcard applications/$(ACC)/$(TESTS)/src/*.c)
 endif
 
 
@@ -129,4 +132,5 @@ clean:
 	rm -rf applications/*/*.{elf,hex,dis,map,dump} \
 	rm -rf x_heep_applications/*/*.{elf,hex,dis,map,dump} \
 	rm -rf applications/*/*/*/*.{elf,hex,dis,map,dump} \
+	rm -rf applications/*/*/*.{elf,hex,dis,map,dump} \
 	rm -rf applications/*/*/*/*/*.{elf,hex,dis,map,dump}

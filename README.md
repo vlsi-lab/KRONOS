@@ -41,6 +41,8 @@ make app-original-SHA3-384 TESTS=KECCAK ACC=original
 make run-original-SHA3-384 TESTS=KECCAK ACC=original
 ```
 
+Kyber applications are also available (kyber512, kyber768, kyber1024).
+
 ## Notes
 This version uses custom instructions implemented through the CV-X-IF interface.
 

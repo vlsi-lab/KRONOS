@@ -95,7 +95,7 @@ app-helloworld:
 	$(MAKE) -C sw x_heep_applications/hello_world/hello_world.hex TARGET=$(TARGET) LINKER=$(LINKER)
 
 app-$(ACC)-$(TESTS):
-	$(MAKE) -C sw applications/$(ACC)/$(TESTS)/main.hex 
+	$(MAKE) -C sw applications/$(ACC)/$(TESTS)/main.hex LINKER=$(LINKER)
 	@echo "### DONE! App app-$(ACC)/$(TESTS) generated successfully for $(ACC)-version!"
 
 #  riscv32-unknown-elf-objdump -d applications/original/$(SCHEME)/$(ALG)/$(VERSION)/main.elf > dis/test-$(SCHEME)-$(ALG)-$(VERSION).s
