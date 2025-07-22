@@ -17,12 +17,6 @@ Unlike the Instruction Set Extension (ISE) approach, this version is **not fully
 ![Integration Scheme – Coprocessor](Integrations_methods-b.png)  
 *Figure: Coprocessor-based integration scheme of the KRONOS accelerator.*
 
-## Directory Structure
-
-- `coprocessor/` → Coprocessor integration branch.
-- Custom instruction definitions and drivers are located under:
-  `/home/alessandra.dolmeta/HORCRUX/ref/KRONOS/sw/external/lib/drivers/keccak/`
-
 ## Getting Started
 
 After cloning the repository and checking out the `coprocessor` branch, build and simulate using:
