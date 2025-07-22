@@ -25,10 +25,10 @@ device/lib/drivers/spi_host/spi_host.c:430:44:spi_intr_handler_event_host	32	sta
 device/lib/drivers/spi_host/spi_host.c:434:44:spi_intr_handler_error_host	32	static
 device/lib/drivers/spi_host/spi_host.c:438:44:spi_intr_handler_event_host2	32	static
 device/lib/drivers/spi_host/spi_host.c:442:44:spi_intr_handler_error_host2	32	static
-applications/original/common/src/fips202.c:73:14:KeccakF1600_StatePermute	400	static
+applications/optimized/SHA3-384/fips202.c:96:6:KeccakF1600_StatePermute	288	static
 device/lib/drivers/spi_host/spi_host.c:452:20:spi_get_events.isra	16	static
 device/lib/runtime/handler.c:28:13:print_exc_msg	16	static
-applications/original/KECCAK/SHA3-384/main.c:13:5:main	672	static
+applications/optimized/SHA3-384/main.c:24:5:main	688	static
 device/lib/runtime/init.c:9:5:init	0	static
 device/lib/runtime/syscalls.c:98:5:_close	0	static
 /software/x-heep/riscv-centos/riscv32-unknown-elf/include/sys/unistd.h:18:6:_exit	0	static

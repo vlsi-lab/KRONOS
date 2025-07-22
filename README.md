@@ -1,32 +1,45 @@
-# KRONOS
+# KRONOS – Tightly-Coupled Integration
 
 ## Overview
 
-The integration methodology can significantly affect the performance of dedicated accelerators. This work undertakes an exploration of this aspect, considering Keccak, a pivotal hashing standard in Post-Quantum Cryptography (PQC), as a case of study. The paper presents three versions of KRONOS (Keccak RISC-V Optimized eNgine fOr haShing): a loosely-coupled memory-mapped accelerator, a tightly-coupled approach, and an Instruction Set Extension (ISE). The latter two versions leverage the CV-X-IF interface, with and without, respectively, an additional register file to store the Keccak state. Results show that the tightly approach is the most efficient integration method, achieving a balance between resource consumption and throughput.
+The integration methodology can significantly affect the performance of dedicated accelerators. This project explores this aspect using **Keccak**, a pivotal hashing standard in **Post-Quantum Cryptography (PQC)**, as a case study.
 
-## Branches
+This branch implements the **tightly coupled** version of KRONOS (Keccak RISC-V Optimized eNgine fOr haShing), leveraging the **CV-X-IF interface** to implement **RISC-V-compliant custom instructions**. These instructions conform to the standard RISC-V format: two source registers and one destination register, ensuring full compatibility with the scalar register file.
 
-- loosely
-- tightly
-- coprocessor
+Since Keccak was originally designed for 64-bit architectures, the implementation is adapted to operate efficiently on **32-bit systems**. One of the critical components enabling this efficiency is the bitwise rotation operation. To support this, a dedicated `rol_32` instruction has been introduced. It performs efficient 64-bit rotations by operating directly on **pairs of 32-bit registers**, significantly improving the performance of the permutation rounds.
+
+![Integration Scheme – Tightly Coupled](Integrations_methods-c.png)  
+*Figure: Tightly coupled integration scheme of the KRONOS accelerator.*
 
 
+## Getting Started
 
-## Getting started
+After cloning the repository and checking out the `tightly` branch, build and simulate using:
 
-Once you have cloned the repository:
-```
+```sh
 make mcu-gen
 make x_heep-sync
 make questasim-sim
 ```
 
-Then, depending on the applications you want to run, you need to do:
+## Running Applications
+
+You can run applications using either the optimized or original Keccak-SHA3-384 flow.
+
+```sh
+make app-optimized-SHA3-384 ACC=optimized TESTS=SHA3-384 
+make run-optimized-SHA3-384 ACC=optimized TESTS=SHA3-384 
 ```
-make app-optimized-KECCAK-SHA3-384 SCHEME=SHA3-384 ALG=KECCAK ACC=optimized
-make run-optimized-KECCAK-SHA3-384 SCHEME=SHA3-384 ALG=KECCAK ACC=optimized
+
+```sh
+make app-original-SHA3-384 TESTS=KECCAK ACC=original
+make run-original-SHA3-384 TESTS=KECCAK ACC=original
 ```
-```
-make app-original-KECCAK-SHA3-384 SCHEME=SHA3-384 ALG=KECCAK ACC=original
-make run-original-KECCAK-SHA3-384 SCHEME=SHA3-384 ALG=KECCAK ACC=original
-```
+
+## Notes
+- This version uses custom instructions implemented through the CV-X-IF interface.
+- The rol_32 instruction is a key enabler for efficient bitwise operations across 64-bit Keccak lanes on 32-bit hardware.
+- The integration ensures minimal data movement overhead by tightly coupling the permutation logic to the RISC-V execution pipeline.
+- Unlike the coprocessor version, all Keccak-related instructions operate directly on the scalar register file, maintaining ISA compatibility.
+- The tightly coupled design offers a strong tradeoff between performance and hardware complexity, and demonstrates the feasibility of efficient post-quantum hashing in constrained environments.
+

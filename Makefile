@@ -94,9 +94,9 @@ vendor-update-CRYPTO-VLSI-SW:
 app-helloworld:
 	$(MAKE) -C sw x_heep_applications/hello_world/hello_world.hex TARGET=$(TARGET) LINKER=$(LINKER)
 
-app-$(ACC)-$(ALG)-$(SCHEME):
-	$(MAKE) -C sw applications/$(ACC)/$(ALG)/$(SCHEME)/main.hex 
-	@echo "### DONE! App app-$(ACC)-$(ALG)-$(SCHEME) generated successfully for $(ACC)-version!"
+app-$(ACC)-$(TESTS):
+	$(MAKE) -C sw applications/$(ACC)/$(TESTS)/main.hex 
+	@echo "### DONE! App app-$(ACC)/$(TESTS) generated successfully for $(ACC)-version!"
 
 #  riscv32-unknown-elf-objdump -d applications/original/$(SCHEME)/$(ALG)/$(VERSION)/main.elf > dis/test-$(SCHEME)-$(ALG)-$(VERSION).s
 
@@ -120,9 +120,9 @@ run-helloworld-verilator: verilator-sim app-helloworld
 	cat uart0.log; \
 	cd ../../..;
 
-run-$(ACC)-$(ALG)-$(SCHEME):
+run-$(ACC)-$(TESTS):
 	cd ./build/vlsi_polito_mcu_kronos_0/sim-modelsim; \
-	make run PLUSARGS="c firmware=../../../sw/applications/$(ACC)/$(ALG)/$(SCHEME)/main.hex"; \
+	make run PLUSARGS="c firmware=../../../sw/applications/$(ACC)/$(TESTS)/main.hex"; \
 	cat uart0.log; \
 	cd ../../..;
 
