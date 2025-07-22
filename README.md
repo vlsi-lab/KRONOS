@@ -1,32 +1,57 @@
-# KRONOS
+# KRONOS – Coprocessor Integration
 
 ## Overview
 
-The integration methodology can significantly affect the performance of dedicated accelerators. This work undertakes an exploration of this aspect, considering Keccak, a pivotal hashing standard in Post-Quantum Cryptography (PQC), as a case of study. The paper presents three versions of KRONOS (Keccak RISC-V Optimized eNgine fOr haShing): a loosely-coupled memory-mapped accelerator, a tightly-coupled approach, and an Instruction Set Extension (ISE). The latter two versions leverage the CV-X-IF interface, with and without, respectively, an additional register file to store the Keccak state. Results show that the tightly approach is the most efficient integration method, achieving a balance between resource consumption and throughput.
+The integration methodology can significantly affect the performance of dedicated accelerators. This project explores this aspect using **Keccak**, a pivotal hashing standard in **Post-Quantum Cryptography (PQC)**, as a case study.
 
-## Branches
+This branch implements the **coprocessor-based** version of KRONOS (Keccak RISC-V Optimized eNgine fOr haShing). As in the loosely-coupled approach, the complete Keccak-*f* permutation is performed. However, in this version, the **CV-X-IF interface** facilitates communication between the accelerator and the RISC-V core.
 
-- loosely
-- tightly
-- coprocessor
+Three **R-type custom instructions** are used to:
 
+- Load the internal Keccak state from memory into a dedicated `Keccak Reg` register file
+- Start the 24-round permutation
+- Store the result back into memory
 
+Unlike the Instruction Set Extension (ISE) approach, this version is **not fully compliant** with the RISC-V ISE specification, but still achieves tight integration with custom instruction semantics.
 
-## Getting started
+![Integration Scheme – Coprocessor](Integrations_methods-b.png)  
+*Figure: Coprocessor-based integration scheme of the KRONOS accelerator.*
 
-Once you have cloned the repository:
-```
+## Directory Structure
+
+- `coprocessor/` → Coprocessor integration branch.
+- Custom instruction definitions and drivers are located under:
+  `/home/alessandra.dolmeta/HORCRUX/ref/KRONOS/sw/external/lib/drivers/keccak/`
+
+## Getting Started
+
+After cloning the repository and checking out the `coprocessor` branch, build and simulate using:
+
+```sh
 make mcu-gen
 make x_heep-sync
 make questasim-sim
 ```
 
-Then, depending on the applications you want to run, you need to do:
+## Running Applications
+
+You can run applications using either the optimized or original Keccak-SHA3-384 flow.
+
+```sh
+make app-optimized-SHA3-384 ACC=optimized TESTS=SHA3-384 
+make run-optimized-SHA3-384 ACC=optimized TESTS=SHA3-384 
 ```
-make app-optimized-KECCAK-SHA3-384 SCHEME=SHA3-384 ALG=KECCAK ACC=optimized
-make run-optimized-KECCAK-SHA3-384 SCHEME=SHA3-384 ALG=KECCAK ACC=optimized
+
+```sh
+make app-original-SHA3-384 TESTS=KECCAK ACC=original
+make run-original-SHA3-384 TESTS=KECCAK ACC=original
 ```
-```
-make app-original-KECCAK-SHA3-384 SCHEME=SHA3-384 ALG=KECCAK ACC=original
-make run-original-KECCAK-SHA3-384 SCHEME=SHA3-384 ALG=KECCAK ACC=original
-```
+
+## Notes
+This version uses custom instructions implemented through the CV-X-IF interface.
+
+- It is tightly integrated into the processor pipeline but not fully RISC-V ISE-compliant.
+- The driver code is designed to abstract the instruction interface and provides a software-friendly API.
+- The Keccak Reg file holds the full 1600-bit internal state using 50 32-bit registers.
+- The accelerator executes the full Keccak-f permutation autonomously once triggered.
+

@@ -58,18 +58,12 @@ INC_FOLDERS                += $(sort $(dir $(wildcard external/lib/drivers/*/)))
 INC_FOLDERS                += $(sort $(dir $(wildcard external/lib/runtime/)))
 
 
-INC_FOLDERS                += $(sort $(dir $(wildcard applications/tests/*)))
-LIB_DRIVERS                += $(wildcard applications/tests/*)
-#LIB_DRIVERS                += $(wildcard applications/keccak_test_xif/shake_ds.c)
-
-
-#---------------------------------------------------------------------------------------------------------------------------------------------------------------
-$(info "Compiling $(ACC)-version, $(SCHEME)-$(ALG)-$(VERSION) or -$(TESTS)-app")
-
-INC_FOLDERS                += $(sort $(dir $(wildcard applications/$(ACC)/common/include/*.h)))
-LIB_DRIVERS                += $(wildcard applications/$(ACC)/common/src/*.c)
-INC_FOLDERS                 += $(sort $(dir $(wildcard applications/$(ACC)/$(SCHEME)/$(ALG)/include/*.h)))
-LIB_DRIVERS 				+= $(wildcard applications/$(ACC)/$(SCHEME)/$(ALG)/src/*.c)
+ifeq ($(TESTS), keccak)
+	INC_FOLDERS                 += $(sort $(dir $(wildcard applications//$(ACC)/keccak/*.h)))
+else
+	INC_FOLDERS                += $(sort $(dir $(wildcard applications/$(ACC)/SHA3-384/*.h)))
+	LIB_DRIVERS                += $(wildcard applications/$(ACC)/SHA3-384/fips202.c)
+endif
 
 
 #---------------------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -114,7 +108,7 @@ x_heep_applications/hello_world/hello_world.elf: x_heep_applications/hello_world
 		-L $(RISCV)/riscv32-unknown-elf/lib \
 		-lc -lm -lgcc -flto -ffunction-sections -fdata-sections -fstack-usage -specs=nano.specs
 
-applications/$(ACC)/$(ALG)/$(SCHEME)/main.elf: applications/$(ACC)/$(ALG)/$(SCHEME)/main.c
+applications/$(ACC)/$(TESTS)/main.elf: applications/$(ACC)/$(TESTS)/main.c
 	$(RISCV_EXE_PREFIX)gcc -march=rv32imc -o $@ -w -O2 -g -nostdlib \
 		$(CUSTOM_GCC_FLAGS) \
 		-DHOST_BUILD \
