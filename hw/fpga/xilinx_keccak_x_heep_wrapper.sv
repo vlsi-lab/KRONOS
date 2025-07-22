@@ -3,7 +3,13 @@
 // SPDX-License-Identifier: Apache-2.0 WITH SHL-2.1
 //
 
-module xilinx_keccak_x_heep_top_wrapper
+
+// kronos_x_heep_top : wrapper of the accelerator and x_heep
+// Designed by Alessandra Dolmeta, Mattia Mirigaldi, Valeria Piscopo
+// alessandra.dolmeta@polito.it, mattia.mirigaldi@polito.it, valeria.piscopo@polito.it
+//
+
+module xilinx_kronos_x_heep_top_wrapper
   import obi_pkg::*;
   import reg_pkg::*;
 #( 
@@ -115,11 +121,11 @@ module xilinx_keccak_x_heep_top_wrapper
   );
 
     
-  keccak_x_heep_top  #(
+  kronos_x_heep_top  #(
       .COREV_PULP(COREV_PULP),
       .FPU(FPU),
       .ZFINX(ZFINX)
-  ) keccak_x_heep_top_i (
+  ) kronos_x_heep_top_i (
       .clk_i(clk_gen),
       .rst_ni(rst_n),
       .boot_select_i(boot_select_i),

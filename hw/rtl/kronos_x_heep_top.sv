@@ -3,12 +3,12 @@
 // SPDX-License-Identifier: Apache-2.0 WITH SHL-2.1
 //
 
-// keccak_x_heep_top : wrapper of the accelerator and x_heep
+// kronos_x_heep_top : wrapper of the accelerator and x_heep
 // Designed by Alessandra Dolmeta, Mattia Mirigaldi
 // alessandra.dolmeta@polito.it, mattia.mirigaldi@polito.it
 //
 
-module keccak_x_heep_top 
+module kronos_x_heep_top 
   import obi_pkg::*;
   import reg_pkg::*;
 #(
@@ -60,7 +60,7 @@ module keccak_x_heep_top
    
   import obi_pkg::*;
   import reg_pkg::*;
-  import keccak_x_heep_pkg::*;
+  import kronos_x_heep_pkg::*;
 
    
   localparam int unsigned LOG_EXT_XBAR_NSLAVE = EXT_XBAR_NSLAVE > 32'd1 ? $clog2(
@@ -92,11 +92,11 @@ module keccak_x_heep_top
 
 
   // Since not used an external device with master port 
-  assign ext_master_req[keccak_x_heep_pkg::EXT_MASTER0_IDX].req = '0;
-  assign ext_master_req[keccak_x_heep_pkg::EXT_MASTER0_IDX].we = '0;
-  assign ext_master_req[keccak_x_heep_pkg::EXT_MASTER0_IDX].be = '0;
-  assign ext_master_req[keccak_x_heep_pkg::EXT_MASTER0_IDX].addr = '0;
-  assign ext_master_req[keccak_x_heep_pkg::EXT_MASTER0_IDX].wdata = '0;
+  assign ext_master_req[kronos_x_heep_pkg::EXT_MASTER0_IDX].req = '0;
+  assign ext_master_req[kronos_x_heep_pkg::EXT_MASTER0_IDX].we = '0;
+  assign ext_master_req[kronos_x_heep_pkg::EXT_MASTER0_IDX].be = '0;
+  assign ext_master_req[kronos_x_heep_pkg::EXT_MASTER0_IDX].addr = '0;
+  assign ext_master_req[kronos_x_heep_pkg::EXT_MASTER0_IDX].wdata = '0;
 
   
   // External interrupts
@@ -133,7 +133,7 @@ module keccak_x_heep_top
       .COREV_PULP(COREV_PULP),
       .FPU(FPU),
       .ZFINX(ZFINX),
-      .EXT_XBAR_NMASTER(keccak_x_heep_pkg::EXT_XBAR_NMASTER)
+      .EXT_XBAR_NMASTER(kronos_x_heep_pkg::EXT_XBAR_NMASTER)
   ) x_heep_system_i (
       .clk_i,
       .rst_ni,

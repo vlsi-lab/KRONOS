@@ -61,31 +61,31 @@ app-$(TESTS):
 
 # Simulation
 questasim-sim:
-	$(FUSESOC) --cores-root . run --no-export --target=sim --tool=modelsim $(FUSESOC_FLAGS) --setup --build vlsi:polito:mcu_keccak 2>&1 | tee buildsim.log
+	$(FUSESOC) --cores-root . run --no-export --target=sim --tool=modelsim $(FUSESOC_FLAGS) --setup --build vlsi:polito:mcu_kronos 2>&1 | tee buildsim.log
 
 verilator-sim: 
-	fusesoc --cores-root . run --no-export --target=sim --tool=verilator $(FUSESOC_FLAGS) --setup --build vlsi:polito:mcu_keccak 2>&1 | tee buildsim.log
+	fusesoc --cores-root . run --no-export --target=sim --tool=verilator $(FUSESOC_FLAGS) --setup --build vlsi:polito:mcu_kronos 2>&1 | tee buildsim.log
 
 run-helloworld-questasim: questasim-sim app-helloworld
-	cd ./build/vlsi_polito_mcu_keccak_0/sim-modelsim; \
+	cd ./build/vlsi_polito_mcu_kronos_0/sim-modelsim; \
 	make run PLUSARGS="c firmware=../../../sw/x_heep_applications/hello_world/hello_world.hex"; \
 	cat uart0.log; \
 	cd ../../..;
 
 run-helloworld-verilator: verilator-sim app-helloworld
-	cd ./build/vlsi_polito_mcu_keccak_0/sim-verilator; \
+	cd ./build/vlsi_polito_mcu_kronos_0/sim-verilator; \
 	./Vtestharness +firmware=../../../sw/x_heep_applications/hello_world/hello_world.hex; \
 	cat uart0.log; \
 	cd ../../..;
 
 run-$(TESTS):
-	cd ./build/vlsi_polito_mcu_keccak_0/sim-modelsim; \
+	cd ./build/vlsi_polito_mcu_kronos_0/sim-modelsim; \
 	make run PLUSARGS="c firmware=../../../sw/applications/$(TESTS)/main.hex"; \
 	cat uart0.log; \
 	cd ../../..;
 
 run-keccak-gui:
-	cd ./build/vlsi_polito_mcu_keccak_0/sim-modelsim; \
+	cd ./build/vlsi_polito_mcu_kronos_0/sim-modelsim; \
 	make run-gui PLUSARGS="c firmware=../../../sw/applications/keccak_test/main.hex"; \
 	cat uart0.log; \
 	cd ../../..;
@@ -96,10 +96,10 @@ run-keccak-gui:
 ## @param FPGA_BOARD=nexys-a7-100t,pynq-z2
 ## @param FUSESOC_FLAGS=--flag=<flagname>
 vivado-keccak-fpga:
-	$(FUSESOC) --cores-root . run --no-export --target=$(FPGA_BOARD) $(FUSESOC_FLAGS) --setup --build vlsi:polito:mcu_keccak 2>&1 | tee buildvivado.log
+	$(FUSESOC) --cores-root . run --no-export --target=$(FPGA_BOARD) $(FUSESOC_FLAGS) --setup --build vlsi:polito:mcu_kronos 2>&1 | tee buildvivado.log
 
 vivado-keccak-fpga-nobuild:
-	$(FUSESOC) --cores-root . run --no-export --target=$(FPGA_BOARD) $(FUSESOC_FLAGS) --setup vlsi:polito:mcu_keccak 2>&1 | tee buildvivado.log
+	$(FUSESOC) --cores-root . run --no-export --target=$(FPGA_BOARD) $(FUSESOC_FLAGS) --setup vlsi:polito:mcu_kronos 2>&1 | tee buildvivado.log
 
 clean: clean-app clean-sim
 

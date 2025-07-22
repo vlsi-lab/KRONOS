@@ -3,12 +3,12 @@
 // SPDX-License-Identifier: Apache-2.0 WITH SHL-2.1
 //
 
-// keccak_x_heep_pkg : address rules for keccak accelerator
+// kronos_x_heep_pkg : address rules for kronos accelerator
 // Designed by Alessandra Dolmeta, Mattia Mirigaldi
 // alessandra.dolmeta@polito.it, mattia.mirigaldi@polito.it
 //
 
-package keccak_x_heep_pkg;
+package kronos_x_heep_pkg;
 
   import addr_map_rule_pkg::*;
   import core_v_mini_mcu_pkg::*;
@@ -51,4 +51,4 @@ package keccak_x_heep_pkg;
       EXT_SYSTEM_NPERIPHERALS
   ) : 32'd1;
 
-endpackage  // KECCAK_x_heep_pkg
+endpackage  // kronos_x_heep_pkg

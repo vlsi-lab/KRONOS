@@ -4,18 +4,18 @@ CAPI=2:
 # Solderpad Hardware License, Version 2.1, see LICENSE.md for details.
 # SPDX-License-Identifier: Apache-2.0 WITH SHL-2.1
 
-name: vlsi:polito:mcu_keccak
-description: Integration framework of keccak in MCU
+name: vlsi:polito:mcu_kronos
+description: Integration framework of kronos in MCU
 
 filesets:
-  keccak_x_heep:
+  kronos_x_heep:
     depend:
     - x-heep::packages
     - openhwgroup.org:systems:core-v-mini-mcu
     - vlsi:polito:keccak
     files:
-    - hw/rtl/keccak_x_heep_pkg.sv
-    - hw/rtl/keccak_x_heep_top.sv
+    - hw/rtl/kronos_x_heep_pkg.sv
+    - hw/rtl/kronos_x_heep_top.sv
     file_type: systemVerilogSource
 
   x_heep_system:
@@ -38,7 +38,7 @@ filesets:
   files_verilator_waiver_x_heep:
     files:
     - hw/vendor/esl_epfl_x_heep/tb/tb.vlt
-    - hw/misc/keccak_reg_top.vlt
+    - hw/misc/kronos_reg_top.vlt
     file_type: vlt
 
   fpga-pynq-z2_x_heep:
@@ -47,14 +47,7 @@ filesets:
     files:
     - hw/vendor/esl_epfl_x_heep/tb/ext_xbar.sv
     - hw/vendor/esl_epfl_x_heep/tb/ext_bus.sv
-    - hw/fpga/xilinx_keccak_x_heep_wrapper.sv
-    file_type: systemVerilogSource
-    
-  fpga-pynq-z2-arm_x_heep:
-    depend:
-    - openhwgroup.org:systems:core-v-mini-mcu
-    files:
-    - hw/linux_femu/rtl/linux_femu_keccak.sv
+    - hw/fpga/xilinx_kronos_x_heep_wrapper.sv
     file_type: systemVerilogSource
     
 
@@ -170,13 +163,13 @@ scripts:
 targets:
   default: &default_target
     filesets:
-    - keccak_x_heep
-    toplevel: [keccak_x_heep_top]
+    - kronos_x_heep
+    toplevel: [kronos_x_heep_top]
 
   sim:
     <<: *default_target
     #filesets:
-    #- keccak_x_heep
+    #- kronos_x_heep
     default_tool: modelsim
     filesets_append:
     - tb-harness_x_heep
@@ -250,25 +243,6 @@ targets:
     tools:
       vivado:
         part: xc7z020clg400-1
-    toplevel: [xilinx_keccak_x_heep_top_wrapper]
+    toplevel: [xilinx_kronos_x_heep_top_wrapper]
   
 
-  # pynq-z2-arm-emulation_x_heep:
-  #   filesets:
-  #   - keccak_x_heep
-  #   default_tool: vivado
-  #   description: TUL Pynq-Z2 Board
-  #   filesets_append:
-  #   - x_heep_system
-  #   - fpga-pynq-z2-arm_x_heep
-  #   parameters:
-  #   - use_cv32e40p_corev_pulp? (COREV_PULP=1)
-  #   - "!use_cv32e40p_corev_pulp? (COREV_PULP=0)"
-  #   - use_cv32e40p_fpu? (FPU=1)
-  #   - "!use_cv32e40p_fpu? (FPU=0)"
-  #   - SYNTHESIS=true
-  #   tools:
-  #     vivado:
-  #       part: xc7z020clg400-1
-  #       jobs: 4
-  #   toplevel: [linux_femu_keccak]
