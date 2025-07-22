@@ -56,9 +56,8 @@ mcu-gen:
 app-helloworld:
 	$(MAKE) -C sw x_heep_applications/hello_world/hello_world.hex  TARGET=$(TARGET)
 
-app-keccak:
-	$(MAKE) -C sw applications/keccak_test/main.hex  TARGET=$(TARGET) USE_DMA=$(USE_DMA)
-
+app-$(TESTS):
+	$(MAKE) -C sw applications/$(TESTS)/main.hex TARGET=$(TARGET) USE_DMA=$(USE_DMA)	
 
 # Simulation
 questasim-sim:
@@ -79,9 +78,9 @@ run-helloworld-verilator: verilator-sim app-helloworld
 	cat uart0.log; \
 	cd ../../..;
 
-run-keccak: 
+run-$(TESTS):
 	cd ./build/vlsi_polito_mcu_keccak_0/sim-modelsim; \
-	make run PLUSARGS="c firmware=../../../sw/applications/keccak_test/main.hex"; \
+	make run PLUSARGS="c firmware=../../../sw/applications/$(TESTS)/main.hex"; \
 	cat uart0.log; \
 	cd ../../..;
 
@@ -90,9 +89,6 @@ run-keccak-gui:
 	make run-gui PLUSARGS="c firmware=../../../sw/applications/keccak_test/main.hex"; \
 	cat uart0.log; \
 	cd ../../..;
-
-
-
 
 ## @section Vivado
 
