@@ -56,15 +56,27 @@ INC_FOLDERS                += $(sort $(dir $(wildcard device/lib/crt/)))
 INC_FOLDERS                += $(sort $(dir $(wildcard external/lib/drivers/*/)))
 INC_FOLDERS                += $(sort $(dir $(wildcard external/lib/runtime/)))
 
-
 ifeq ($(TESTS), keccak)
-	INC_FOLDERS                 += $(sort $(dir $(wildcard applications/keccak_test/*.h)))
-else
+	INC_FOLDERS                 += $(sort $(dir $(wildcard applications/keccak/*.h)))
+else ifeq ($(TESTS), SHA3-384)
 	INC_FOLDERS                += $(sort $(dir $(wildcard applications/SHA3-384/*.h)))
 	LIB_DRIVERS                += $(wildcard applications/SHA3-384/fips202.c)
+else 
+	INC_FOLDERS                += $(sort $(dir $(wildcard applications/$(TESTS)/include/*.h)))
+	LIB_DRIVERS                += $(wildcard applications/$(TESTS)/src/*.c)
 endif
 
-
+#LIB_DRIVERS                += $(wildcard applications/$(TESTS)/cbd.c)
+#LIB_DRIVERS                += $(wildcard applications/$(TESTS)/fips202.c)
+#LIB_DRIVERS                += $(wildcard applications/$(TESTS)/indcpa.c)
+#LIB_DRIVERS                += $(wildcard applications/$(TESTS)/kem.c)
+#LIB_DRIVERS                += $(wildcard applications/$(TESTS)/ntt.c)
+#LIB_DRIVERS                += $(wildcard applications/$(TESTS)/poly.c)
+#LIB_DRIVERS                += $(wildcard applications/$(TESTS)/polyvec.c)
+#LIB_DRIVERS                += $(wildcard applications/$(TESTS)/randombytes.c)
+#LIB_DRIVERS                += $(wildcard applications/$(TESTS)/reduce.c)
+#LIB_DRIVERS                += $(wildcard applications/$(TESTS)/symmetric-shake.c)
+#LIB_DRIVERS                += $(wildcard applications/$(TESTS)/verify.c)
 
 ifeq ($(LINKER), flash_exec)
 	LINKER_FILE = link_flash_exec.ld

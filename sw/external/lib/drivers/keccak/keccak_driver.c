@@ -68,8 +68,6 @@ void KeccakF1600_StatePermute(uint32_t* Din, uint32_t* Dout)
   const uint32_t mask = 1 << 11;//IRQ_EXT_ENABLE_OFFSET;
   CSR_SET_BITS(CSR_REG_MIE, mask);
 
-  // Starting the performance counter
-  CSR_WRITE(CSR_REG_MCYCLE, 0);
 
   // The DMA is initialized (i.e. Any current transaction is cleaned.)
   dma_init(NULL);
