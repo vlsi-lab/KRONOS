@@ -6,8 +6,7 @@
 #include "keccak_x_heep.h"
 #include "core_v_mini_mcu.h"
 #include "keccak_driver.h"
-#include "keccak_ctrl_auto.h"
-#include "keccak_data_auto.h"
+#include "keccak_auto.h"
 
 #include "stats.h"
 
@@ -24,10 +23,6 @@
 #define KECCAK_BUSY 0
 #define DATA_SIZE 50
 
-#ifndef USE_DMA
-#define USE_DMA 1
-#endif
-
 // Interrupt controller variables
 plic_result_t plic_res;
 
@@ -35,18 +30,18 @@ plic_result_t plic_res;
 void handler_irq_ext(uint32_t id){
   //printf("D\n");
 }
-
   
 void KeccakF1600_StatePermute(uint32_t* Din, uint32_t* Dout)
 {
 
-  uint32_t volatile *Din_reg_start = (uint32_t*)KECCAK_DIN_START_ADDR;
-  uint32_t volatile *ctrl_reg = (uint32_t*)KECCAK_CTRL_START_ADDR;
-  uint32_t volatile *status_reg = (uint32_t*)KECCAK_STATUS_START_ADDR;
+  uint32_t volatile *Din_reg_start = (uint32_t*)KECCAK_PERIPH_START_ADDRESS;
+  uint32_t volatile *ctrl_reg = (uint32_t*)(KECCAK_PERIPH_START_ADDRESS + 0xc8);
+  uint32_t volatile *status_reg = (uint32_t*)(KECCAK_PERIPH_START_ADDRESS + 0xcc);
   uint32_t current_status;
-  uint32_t volatile *Dout_reg_start = (uint32_t*)KECCAK_DOUT_START_ADDR;
+
+
   
-  uint32_t* ext_addr_4B_PTR = (uint32_t*)KECCAK_DIN_START_ADDR;
+  uint32_t* ext_addr_4B_PTR = (uint32_t*)KECCAK_PERIPH_START_ADDRESS;
  
   // Keccak accelerator send interrupt on ext_intr line 0
   plic_res = plic_Init();
@@ -121,16 +116,16 @@ void KeccakF1600_StatePermute(uint32_t* Din, uint32_t* Dout)
 
   
   asm volatile ("": : : "memory");
-  *ctrl_reg = 1 << KECCAK_CTRL_CTRL_START_BIT;
+  *ctrl_reg = 1 << KECCAK_CTRL_START;
   asm volatile ("": : : "memory");
-  *ctrl_reg = 0 << KECCAK_CTRL_CTRL_START_BIT;
+  *ctrl_reg = 0 << KECCAK_CTRL_START;
 
   // Wait till keccak is done
   while(plic_intr_flag==0) {
       wait_for_interrupt();
   }
 
-  ext_addr_4B_PTR = (uint32_t*)KECCAK_DOUT_START_ADDR;
+  ext_addr_4B_PTR = (uint32_t*)KECCAK_PERIPH_START_ADDRESS;
   tgt_src.ptr = ext_addr_4B_PTR;
   tgt_dst.ptr = Dout;
 

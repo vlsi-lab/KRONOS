@@ -122,8 +122,6 @@ module kronos_x_heep_top
   keccak_top keccak_top_i (
       .clk_i,
       .rst_ni,
-      .slave_req_i(ext_slave_req),
-      .slave_resp_o(ext_slave_resp),
       .reg_req_i(ext_periph_slave_req),
       .reg_rsp_o(ext_periph_slave_resp),
       .keccak_intr_o(keccak_intr)
