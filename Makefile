@@ -78,8 +78,8 @@ x_heep-sync:
 	rsync -a config/cpu_subsystem.sv hw/vendor/esl_epfl_x_heep/hw/core-v-mini-mcu/cpu_subsystem.sv
 
 mcu-gen:
-	@sed -i 's/stack_size: 0x[0-9a-fA-F]*,/stack_size: 0x35000,/g' hw/vendor/esl_epfl_x_heep/mcu_cfg.hjson
-	@sed -i 's/heap_size: 0x[0-9a-fA-F]*,/heap_size: 0x35000,/g' hw/vendor/esl_epfl_x_heep/mcu_cfg.hjson
+	@sed -i 's/stack_size: 0x[0-9a-fA-F]*,/stack_size: 0x20000,/g' hw/vendor/esl_epfl_x_heep/mcu_cfg.hjson
+	@sed -i 's/heap_size: 0x[0-9a-fA-F]*,/heap_size: 0x20000,/g' hw/vendor/esl_epfl_x_heep/mcu_cfg.hjson
 #	@sed -i 's/CONFIG.CLKOUT1_REQUESTED_OUT_FREQ {[0-9]\+}/CONFIG.CLKOUT1_REQUESTED_OUT_FREQ {50}/g' hw/vendor/esl_epfl_x_heep/hw/fpga/scripts/zcu104/xilinx_generate_clk_wizard.tcl
 	$(MAKE) -f $(XHEEP_MAKE) $(MAKECMDGOALS) CPU=cv32e40px BUS=NtoM MEMORY_BANKS=16 EXTERNAL_DOMAINS=$(EXTERNAL_DOMAINS)
 
@@ -95,7 +95,7 @@ app-helloworld:
 	$(MAKE) -C sw x_heep_applications/hello_world/hello_world.hex TARGET=$(TARGET) LINKER=$(LINKER)
 
 app-$(ACC)-$(TESTS):
-	$(MAKE) -C sw applications/$(ACC)/$(TESTS)/main.hex 
+	$(MAKE) -C sw applications/$(ACC)/$(TESTS)/main.hex LINKER=$(LINKER)
 	@echo "### DONE! App app-$(ACC)/$(TESTS) generated successfully for $(ACC)-version!"
 
 #  riscv32-unknown-elf-objdump -d applications/original/$(SCHEME)/$(ALG)/$(VERSION)/main.elf > dis/test-$(SCHEME)-$(ALG)-$(VERSION).s
@@ -125,6 +125,7 @@ run-$(ACC)-$(TESTS):
 	make run PLUSARGS="c firmware=../../../sw/applications/$(ACC)/$(TESTS)/main.hex"; \
 	cat uart0.log; \
 	cd ../../..;
+
 
 
 
