@@ -80,7 +80,7 @@ run-helloworld-verilator: verilator-sim app-helloworld
 
 run-$(TESTS):
 	cd ./build/vlsi_polito_mcu_kronos_0/sim-modelsim; \
-	make run PLUSARGS="c firmware=../../../sw/applications/$(TESTS)/main.hex"; \
+	make run-gui PLUSARGS="c firmware=../../../sw/applications/$(TESTS)/main.hex"; \
 	cat uart0.log; \
 	cd ../../..;
 
