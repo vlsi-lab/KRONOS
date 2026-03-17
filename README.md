@@ -41,6 +41,9 @@ make app-original-SHA3-384 TESTS=KECCAK ACC=original
 make run-original-SHA3-384 TESTS=KECCAK ACC=original
 ```
 
+make app-optimized-keccak TESTS=keccak ACC=optimized
+make run-optimized-keccak TESTS=keccak ACC=optimized
+
 Kyber applications are also available (kyber512, kyber768, kyber1024).
 
 ## Notes

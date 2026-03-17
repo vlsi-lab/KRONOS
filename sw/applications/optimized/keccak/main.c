@@ -12,8 +12,7 @@
 
 static void KeccakF1600_StatePermute(uint64_t *state) {
 
-    uint32_t Abe_low;
-    uint32_t Abe_high;
+	uint32_t Abe_low, Abe_high;
 
     asm volatile (".insn r 0x4b, 0x004, 0, x0, %[rs1], %[rs2], %[i]\r\n": : [rs1] "r" (state[0] ), [rs2] "r" ((state[0] >> 32) ), [i] "r" (0): );
     asm volatile (".insn r 0x4b, 0x004, 0, x0, %[rs1], %[rs2], %[i]\r\n": : [rs1] "r" (state[1] ), [rs2] "r" ((state[1] >> 32) ), [i] "r" (2): );
